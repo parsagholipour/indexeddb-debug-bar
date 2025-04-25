@@ -1,5 +1,5 @@
 // this file is used for dev environment only
-import Dexie, { Table } from 'dexie';
+import Dexie, {Table} from 'dexie';
 import dexieCloud from "dexie-cloud-addon";
 
 export interface User {
@@ -23,11 +23,17 @@ export class MySubClassedDexie extends Dexie {
   }
 }
 
-const db = new MySubClassedDexie('INDEXEDDB_DEBUG_BAR', {addons: []});
-// db.cloud.configure({
-//   databaseUrl: import.meta.env.DEXIE_CLOUD_DB_URL,
-//   requireAuth: false,
-// });
+const db = new MySubClassedDexie('INDEXEDDB_DEBUG_BAR', {
+  addons: [
+    ...(import.meta.env.VITE_DEXIE_CLOUD_ENABLED ? [dexieCloud] : [])
+  ]
+});
+if (import.meta.env.VITE_DEXIE_CLOUD_ENABLED) {
+  db.cloud.configure({
+    databaseUrl: import.meta.env.VITE_DEXIE_CLOUD_DB_URL,
+    requireAuth: false,
+  });
+}
 
 window.db = db;
 

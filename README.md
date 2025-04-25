@@ -1,6 +1,6 @@
 [![indexeddb-debug-bar-banner](https://raw.githubusercontent.com/parsagholipour/indexeddb-debug-bar/master/public/banner.jpg)](https://parsagholipour.github.io/indexeddb-debug-bar-demo/)
 
-# IndexedDB Debug Bar
+# IndexedDB Debug Bar - <a href="https://parsagholipour.github.io/indexeddb-debug-bar-demo/" target="_blank">🌐 Live Demo</a>
 **A tool to make IndexedDB development easier**
 Browser devtools for IndexedDB are often limited, making debugging and optimizing IndexedDB painful. **IndexedDB Debug Bar** bridges this gap by providing debugging capabilities right inside your app.
 A zero-config panel that lets you **browse, query and profile IndexedDB**.

@@ -26,7 +26,7 @@ function App() {
       ])}>
         <Example db={database} />
       </div>
-      <IdxDebugBar initialLayout={layout} onLayoutChange={setLayout} db={'INDEXEDDB_DEBUG_BAR'}/>
+      <IdxDebugBar initialLayout={layout} onLayoutChange={setLayout} db={database}/>
     </div>
   )
 }

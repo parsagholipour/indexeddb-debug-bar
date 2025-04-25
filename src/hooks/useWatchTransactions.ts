@@ -45,7 +45,8 @@ const useWatchTransactions = (db: Dexie): {operations: Operation[]; clearOperati
                   }
                   const result = await downlevelTable.mutate(req);
                   const endTime = performance.now();
-                  console.log('mutatedTables.current actual mutation', req, result, mutatedTables.current, tableName)
+                  if (import.meta.env.DEV)
+                    console.log('mutatedTables.current actual mutation', req, result, mutatedTables.current, tableName)
 
                   logOperation({
                     type: typeMap[req.type] || req.type,
@@ -115,7 +116,8 @@ const useWatchTransactions = (db: Dexie): {operations: Operation[]; clearOperati
                     return result
                   }
 
-                  console.log('mutatedTables.current', req, result, mutatedTables.current, tableName)
+                  if (import.meta.env.DEV)
+                    console.log('mutatedTables.current', req, result, mutatedTables.current, tableName)
 
                   logOperation({
                     type: 'read',
