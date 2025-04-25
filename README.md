@@ -56,6 +56,10 @@ import IndexedDBDebugBar from 'indexeddb-debug-bar/vue';
 </template>
 ```
 
+### Dexie Cloud Demo
+[▶️ Watch the demo](https://raw.githubusercontent.com/parsagholipour/indexeddb-debug-bar/master/public/dexie-cloud-demo.mp4)
+
+
 ## Features
 
 - **CRUD Operations with Inline Editing:** View, create, update, and delete entries directly from the interface.

@@ -24,7 +24,7 @@ function App() {
           'w-full'
         ],
       ])}>
-        <Example db={database} />
+        {/*<Example db={database} />*/}
       </div>
       <IdxDebugBar initialLayout={layout} onLayoutChange={setLayout} db={database}/>
     </div>
