@@ -1,7 +1,7 @@
-import { defineConfig } from 'vite'
+import {defineConfig} from 'vite'
 import path from "path";
-import { IgnorePublicPlugin } from 'vite-plugin-ignore-public'
-import { libInjectCss } from 'vite-plugin-lib-inject-css';
+import {IgnorePublicPlugin} from 'vite-plugin-ignore-public'
+import {libInjectCss} from 'vite-plugin-lib-inject-css';
 import vue from "@vitejs/plugin-vue";
 
 export default defineConfig(({mode}) => ({
@@ -15,7 +15,12 @@ export default defineConfig(({mode}) => ({
       formats: ['es', 'umd', 'cjs']
     },
     rollupOptions: {
-      external: ['vue', 'react', 'react-dom', 'dexie', 'dexie-cloud-addon', 'dexie-export-import', 'dexie-react-hooks'],
+      external: [
+        'vue',
+        /^react(\/.*)?$/,
+        /^react-dom(\/.*)?$/,
+        'react-modal',
+        'dexie', 'dexie-cloud-addon', 'dexie-export-import', 'dexie-react-hooks'],
     },
     sourcemap: true,
     minify: true

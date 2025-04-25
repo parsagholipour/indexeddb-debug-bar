@@ -1,6 +1,6 @@
 {
   "name": "indexeddb-debug-bar",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "type": "module",
   "description": "A tool for IndexedDB development (CRUD, Query Builder and more)",
   "main": "./dist/core/indexeddb-debug-bar-core.cjs.js",
@@ -48,10 +48,10 @@
     "jsoneditor": "^10.1.1",
     "lodash.omit": "^4.5.0",
     "postcss-prefix-selector": "^2.1.0",
-    "react-modal": "^3.16.1",
     "react-rnd": "^10.5.2"
   },
   "devDependencies": {
+    "react-modal": "^3.16.1",
     "@eslint/js": "^9.13.0",
     "@types/jsoneditor": "^9.9.5",
     "@types/lodash.omit": "^4.5.9",
@@ -87,7 +87,8 @@
     "dexie-export-import": "*",
     "dexie-react-hooks": "*",
     "react": ">=14.0.0",
-    "react-dom": ">=14.0.0"
+    "react-dom": ">=14.0.0",
+    "react-modal": "^3.0.0"
   },
   "files": [
     "dist"
