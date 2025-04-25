@@ -56,6 +56,14 @@ import IndexedDBDebugBar from 'indexeddb-debug-bar/vue';
 </template>
 ```
 
+#### CDN - <a href="https://codesandbox.io/p/sandbox/z63k34" targe="_blank">LIVE DEMO</a>
+```html
+<script src="https://cdn.jsdelivr.net/npm/indexeddb-debug-bar@latest/dist/browser/indexeddb-debug-bar-browser.umd.js"></script>
+<script>
+    new IndexedDBDebugBar();
+</script>
+```
+
 ### Dexie Cloud Demo
 
 https://github.com/user-attachments/assets/664cd39b-2693-4157-9adb-2abc0efc857f

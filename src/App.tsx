@@ -11,6 +11,7 @@ function App() {
     position: window.innerWidth < 1000 ? 'bottom' : 'right',
   })
 
+  database.users.toArray().then(user => alert(`Database user ${user}`))
   return (
     <div className={'indexeddb-debug-bar'}>
       <div className={clsx([
@@ -26,7 +27,7 @@ function App() {
       ])}>
         {/*<Example db={database} />*/}
       </div>
-      <IdxDebugBar initialLayout={layout} onLayoutChange={setLayout} db={database}/>
+      <IdxDebugBar initialLayout={layout} onLayoutChange={setLayout} />
     </div>
   )
 }
