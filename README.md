@@ -1,4 +1,4 @@
-![indexeddb-debug-bar-banner](https://github.com/user-attachments/assets/0f770f68-08d7-43ed-8817-481202c898d6)
+![indexeddb-debug-bar-banner](https://raw.githubusercontent.com/parsagholipour/indexeddb-debug-bar/master/public/banner.jpg)
 
 # IndexedDB Debug Bar
 **A tool to make IndexedDB development easier**
