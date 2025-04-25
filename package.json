@@ -1,0 +1,110 @@
+{
+  "name": "indexeddb-debug-bar",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "A tool for IndexedDB development (CRUD, Query Builder and more)",
+  "main": "./dist/core/indexeddb-debug-bar-core.cjs.js",
+  "module": "./dist/core/indexeddb-debug-bar-core.es.js",
+  "style": "./dist/core/core.css",
+  "types": "./dist/types/build/core.d.ts",
+  "browser": "./dist/browser/indexeddb-debug-bar-browser.umd.js",
+  "unpkg": "./dist/browser/indexeddb-debug-bar-browser.umd.js",
+  "jsdelivr": "./dist/browser/indexeddb-debug-bar-browser.umd.js",
+  "exports": {
+    ".": {
+      "types": "./dist/types/build/core.d.ts",
+      "import": "./dist/core/indexeddb-debug-bar-core.es.js",
+      "require": "./dist/core/indexeddb-debug-bar-core.cjs.js"
+    },
+    "./react": {
+      "types": "./dist/types/build/react.d.ts",
+      "import": "./dist/react/indexeddb-debug-bar-react.es.js",
+      "require": "./dist/react/indexeddb-debug-bar-react.cjs.js"
+    },
+    "./vue": {
+      "types": "./dist/types/build/vue/Component.vue.d.ts",
+      "import": "./dist/vue/indexeddb-debug-bar-vue.es.js",
+      "require": "./dist/vue/indexeddb-debug-bar-vue.cjs.js"
+    }
+  },
+  "scripts": {
+    "dev": "vite",
+    "dev-vue": "vite --config vite.config.vue-dev.ts",
+    "build-doc": "vite build",
+    "build": "npm run build-core && npm run build-react && npm run build-vue && npm run build-browser && npm run build-types",
+    "build-react": "vite build --config vite.config.react.ts",
+    "build-vue": "vite build --config vite.config.vue.ts",
+    "build-core": "vite build --config vite.config.core.ts",
+    "build-browser": "vite build --config vite.config.browser.ts",
+    "build-types": "vue-tsc -p tsconfig.build.json  --emitDeclarationOnly --noCheck",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@headlessui/react": "^2.2.0",
+    "@heroicons/react": "^2.2.0",
+    "clsx": "^2.1.1",
+    "framer-motion": "^12.4.7",
+    "jsoneditor": "^10.1.1",
+    "lodash.omit": "^4.5.0",
+    "postcss-prefix-selector": "^2.1.0",
+    "react-modal": "^3.16.1",
+    "react-rnd": "^10.5.2"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.13.0",
+    "@types/jsoneditor": "^9.9.5",
+    "@types/lodash.omit": "^4.5.9",
+    "@types/node": "^20.14.8",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@types/react-modal": "^3.16.3",
+    "@vitejs/plugin-react-swc": "^3.5.0",
+    "@vitejs/plugin-vue": "^5.2.3",
+    "autoprefixer": "^10.4.20",
+    "dexie": "^4.0.11",
+    "dexie-cloud-addon": "^4.0.11",
+    "dexie-export-import": "^4.1.4",
+    "dexie-react-hooks": "^1.1.7",
+    "eslint": "^9.13.0",
+    "eslint-plugin-react-hooks": "^5.0.0",
+    "eslint-plugin-react-refresh": "^0.4.14",
+    "globals": "^15.11.0",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.15",
+    "typescript": "~5.6.2",
+    "typescript-eslint": "^8.11.0",
+    "vite": "^5.4.10",
+    "vite-plugin-ignore-public": "^0.0.3",
+    "vite-plugin-lib-inject-css": "^2.2.1",
+    "vite-plugin-node-polyfills": "^0.23.0",
+    "vue": "^3.5.13",
+    "vue-tsc": "^2.2.10"
+  },
+  "peerDependencies": {
+    "dexie": "*",
+    "dexie-cloud-addon": "*",
+    "dexie-export-import": "*",
+    "dexie-react-hooks": "*",
+    "react": ">=14.0.0",
+    "react-dom": ">=14.0.0"
+  },
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "indexeddb",
+    "indexeddb debug",
+    "dexie",
+    "dexie js"
+  ],
+  "author": {
+    "name": "Parsa Gholipour",
+    "email": "12parsaaa@gmail.com"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/parsagholipour/indexeddb-debug-bar.git"
+  }
+}
