@@ -1,6 +1,6 @@
 {
   "name": "indexeddb-debug-bar",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "description": "A tool for IndexedDB development (CRUD, Query Builder and more)",
   "main": "./dist/core/indexeddb-debug-bar-core.cjs.js",

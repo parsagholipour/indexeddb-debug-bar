@@ -141,12 +141,7 @@ const TableDetails = forwardRef(({
 
   const handleDeleteItem = async (row: any, rowIdx: number) => {
     if (!window.confirm("Are you sure you want to delete this record?")) return;
-    let key
-    if (!primaryKeyField) {
-      key = tablePrimaryKeys![rowIdx]
-    } else {
-      key = getRowKey(row, primaryKeyField);
-    }
+    const key = getRowKey(row, primaryKeyField);
     try {
       const queriableKey = getRowKeyQueriableForDelete(key)
       await table.delete(queriableKey);
@@ -428,13 +423,20 @@ const TableDetails = forwardRef(({
                                     newValue = inlineEditingValue;
                                   }
                                 }
-                                if (newValue !== row[key]) {
-                                  if (!isOutboundKeyTable) {
-                                    await table.update(getRowKeyQueriable(rowKey), { [key]: newValue });
-                                  } else {
-                                    await table.put({ ...omit(row, '__outbound_key'), [key]: newValue }, row.__outbound_key);
+                                try {
+                                  if (newValue !== row[key]) {
+                                    if (!isOutboundKeyTable) {
+                                      await table.update(getRowKeyQueriable(rowKey), { [key]: newValue });
+                                    } else {
+                                      await table.put({ ...omit(row, '__outbound_key'), [key]: newValue }, row.__outbound_key);
+                                    }
+                                    await refreshTableData();
                                   }
-                                  await refreshTableData();
+                                } catch (e) {
+                                  console.error(e)
+                                  if (e.message) {
+                                    alert(e.message)
+                                  }
                                 }
                                 setEditingCell(null);
                                 setInlineEditingValue("");

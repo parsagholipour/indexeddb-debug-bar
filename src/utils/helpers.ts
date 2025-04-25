@@ -12,6 +12,8 @@ export function getRowKey(row: any, keyPath: string | string[] | undefined) {
 
 export function getRowKeyQueriable(rowKey: string) {
   try {
+    if (typeof rowKey === 'string' && !isNaN(rowKey))
+      return rowKey;
     return JSON.parse(rowKey);
   } catch {
     return rowKey;
