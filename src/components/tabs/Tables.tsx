@@ -197,7 +197,7 @@ function Tables() {
   }, [tableData]);
 
   useEffect(() => {
-    if (db && !selectedTable && !isCloud) {
+    if (db && !isCloud) {
       handleBrowse(db.tables[0], {
         dontScroll: true,
       });
