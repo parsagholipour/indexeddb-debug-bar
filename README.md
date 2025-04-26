@@ -40,7 +40,7 @@ new IndexedDBDebugBar(db);
 ```
 
 ### Framework Adapters
-#### React
+#### React - <a href="https://stackblitz.com/edit/vitejs-vite-kmja6i3c?file=src%2FApp.tsx" target="_blank">LIVE DEMO</a>
 ```jsx
 import IndexedDBDebugBar from 'indexeddb-debug-bar/react';
 
