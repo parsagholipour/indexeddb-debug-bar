@@ -12,7 +12,7 @@ export default defineConfig(({mode}) => ({
       entry: path.resolve(__dirname, 'src/build/vue/Component.vue'),
       name: 'indexeddb-debug-bar-vue',
       fileName: (format) => `indexeddb-debug-bar-vue.${format}.js`,
-      formats: ['es', 'umd', 'cjs']
+      formats: ['es', 'cjs']
     },
     rollupOptions: {
       external: [
@@ -22,7 +22,6 @@ export default defineConfig(({mode}) => ({
         'react-modal',
         'dexie', 'dexie-cloud-addon', 'dexie-export-import', 'dexie-react-hooks'],
     },
-    sourcemap: true,
     minify: true
   }
 }))

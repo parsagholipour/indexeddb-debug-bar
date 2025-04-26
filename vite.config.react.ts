@@ -12,7 +12,7 @@ export default defineConfig(({mode}) => ({
       entry: path.resolve(__dirname, 'src/build/react.tsx'),
       name: 'indexeddb-debug-bar-react',
       fileName: (format) => `indexeddb-debug-bar-react.${format}.js`,
-      formats: ['es', 'umd', 'cjs']
+      formats: ['es', 'cjs']
     },
     rollupOptions: {
       external: [
@@ -21,7 +21,6 @@ export default defineConfig(({mode}) => ({
         'react-modal',
         'dexie', 'dexie-cloud-addon', 'dexie-export-import', 'dexie-react-hooks'],
     },
-    sourcemap: true,
     minify: true
   }
 }))

@@ -17,7 +17,6 @@ export default defineConfig({
     },
     rollupOptions: {
     },
-    sourcemap: true,
     minify: true,
   }
 })
