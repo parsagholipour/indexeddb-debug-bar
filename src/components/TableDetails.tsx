@@ -19,7 +19,8 @@ interface TableDetailsProps {
   refreshTableData: () => void;
 }
 
-const BLINK_DURATION = 300
+const BLINK_DURATION = 300;
+const ROWS_PER_PAGE = 100;
 
 const TableDetails = forwardRef(({
                                    table,
@@ -42,10 +43,13 @@ const TableDetails = forwardRef(({
   const [searchQuery, setSearchQuery] = useState("");
   const [editingCell, setEditingCell] = useState<{ rowKey: any, columnKey: string } | null>(null);
   const [inlineEditingValue, setInlineEditingValue] = useState("");
-  const [changeHistory, setChangeHistory] = useState<Map<any, { data: any; changedAt: Date | null }[]>>(() => new Map())
-  const [selectedChangeHistory, setSelectedChangeHistory] = useState<any>(null)
+  const [changeHistory, setChangeHistory] = useState<Map<any, { data: any; changedAt: Date | null }[]>>(() => new Map());
+  const [selectedChangeHistory, setSelectedChangeHistory] = useState<any>(null);
   const [isChangeHistoryModalOpen, setIsChangeHistoryModalOpen] = useState(false);
   const searchElRef = useRef<HTMLInputElement | null>(null);
+
+  /* Pagination state */
+  const [currentPage, setCurrentPage] = useState<number>(1);
 
   useEffect(() => {
     if (searchActive) {
@@ -53,37 +57,33 @@ const TableDetails = forwardRef(({
     }
   }, [searchActive]);
 
+  // reset current page when query/sort changes
   useEffect(() => {
-    if (selectedChangeHistory) {
-      if (changeHistory.get(selectedChangeHistory[0])) {
-        setSelectedChangeHistory([selectedChangeHistory[0], changeHistory.get(selectedChangeHistory[0])])
-      }
-    }
-  }, [changeHistory]);
+    setCurrentPage(1);
+  }, [searchQuery, sortConfig, table]);
 
-  // New state to track changed row keys based on prop updates.
+  // -------- Change‑tracking logic (unchanged) --------
   const [changedRows, setChangedRows] = useState<Set<any>>(new Set());
-
-  // Determine the primary key field from the table schema.
   const primaryKeyField = table.schema?.primKey?.keyPath;
   const isOutboundKeyTable = primaryKeyField === null;
-
-  // Keep track of previous tableData to detect changes.
   const prevTableDataRef = useRef<any[]>(tableData);
 
   const getPrimaryKeys = useCallback((table: Table) => {
-    return Array.isArray(table.schema.primKey.keyPath) ? table.schema.primKey.keyPath : [table.schema.primKey.keyPath]
+    return Array.isArray(table.schema.primKey.keyPath) ? table.schema.primKey.keyPath : [table.schema.primKey.keyPath];
   }, []);
 
   const primaryKeys = useMemo(() => getPrimaryKeys(table), [table]);
 
   useEffect(() => {
-    setChangeHistory(new Map())
-    setChangedRows(new Set())
+    setChangeHistory(new Map());
+    setChangedRows(new Set());
   }, [table]);
 
-  // Compare new tableData with previous tableData and mark changed rows.
   useEffect(() => {
+    if (tableData?.length > 10000) {
+      console.warn('The table has more than 10,000 rows. Change logs are disabled for performance reasons.');
+      return;
+    }
     if (!prevTableDataRef.current) {
       prevTableDataRef.current = tableData;
       return;
@@ -98,30 +98,26 @@ const TableDetails = forwardRef(({
         const prevKey = getRowKey(r, primaryKeyField);
         return prevKey === key;
       });
-      // If the row is new or changed (using a simple JSON comparison), mark it.
       if (prevRow && JSON.stringify(row) !== JSON.stringify(prevRow)) {
-        const prevData = newChangeHistory.get(key) || []
+        const prevData = newChangeHistory.get(key) || [];
         newChangeHistory.set(key, [
-          ...(prevData?.length ? prevData : [{data: prevRow, changedAt: null}]),
-          {data: row, changedAt: new Date()}
-        ])
+          ...(prevData?.length ? prevData : [{ data: prevRow, changedAt: null }]),
+          { data: row, changedAt: new Date() }
+        ]);
         newChangedRows.add(key);
       }
     });
     if (newChangedRows.size > 0) {
       setChangedRows(newChangedRows);
-      // Remove the highlight after 2 seconds.
-      setTimeout(() => {
-        setChangedRows(new Set());
-      }, BLINK_DURATION);
+      setTimeout(() => setChangedRows(new Set()), BLINK_DURATION);
     }
     if (newChangeHistory.size > 0) {
       setChangeHistory(newChangeHistory);
     }
-    // Update previous tableData reference.
     prevTableDataRef.current = tableData;
   }, [tableData, primaryKeyField]);
 
+  // -------- CRUD helpers (unchanged) --------
   const handleAddItem = () => {
     setEditingRowData(null);
     setModalMode('add');
@@ -135,17 +131,17 @@ const TableDetails = forwardRef(({
   };
 
   const handleRollback = async (row: any) => {
-    const keyValue = getRowKey(row, primaryKeyField)
+    const keyValue = getRowKey(row, primaryKeyField);
     await table.put(row, getRowKeyQueriable(keyValue));
   };
 
-  const handleDeleteItem = async (row: any, rowIdx: number) => {
+  const handleDeleteItem = async (row: any) => {
     if (!window.confirm("Are you sure you want to delete this record?")) return;
     const key = getRowKey(row, primaryKeyField);
     try {
-      const queriableKey = getRowKeyQueriableForDelete(key)
+      const queriableKey = getRowKeyQueriableForDelete(key);
       await table.delete(queriableKey);
-      setSelectedRowKeys((prev) => {
+      setSelectedRowKeys(prev => {
         const newSet = new Set(prev);
         newSet.delete(key);
         return newSet;
@@ -163,9 +159,8 @@ const TableDetails = forwardRef(({
     try {
       await Promise.all(
         Array.from(selectedRowKeys).map(async (key) => {
-          const queriableKey = getRowKeyQueriableForDelete(key)
-
-          return table.delete(queriableKey)
+          const queriableKey = getRowKeyQueriableForDelete(key);
+          return table.delete(queriableKey);
         })
       );
       setSelectedRowKeys(new Set());
@@ -183,7 +178,6 @@ const TableDetails = forwardRef(({
 
   const handleItemSubmit = async (data: any, key?: string) => {
     try {
-      // if synced table, primary keys should be string
       if (isCloud && db.cloud.persistedSyncState.getValue()?.syncedTables.find(syncedTable => syncedTable === table.name)) {
         const keyPath = getPrimaryKeys(table);
         keyPath?.forEach(key => {
@@ -191,7 +185,7 @@ const TableDetails = forwardRef(({
           if (typeof data[key] === 'number') {
             data[key] = String(data[key]);
           }
-        })
+        });
       }
       if (modalMode === 'edit' && editingRowData) {
         await table.put(data, key);
@@ -207,9 +201,9 @@ const TableDetails = forwardRef(({
   };
 
   // Collect all keys across all rows.
-  const allKeys = Array.from(new Set(tableData.flatMap((row) => Object.keys(row))));
+  const allKeys = useMemo(() => Array.from(new Set(tableData.flatMap((row) => Object.keys(row)))), [tableData]);
 
-  // ---- Filtering based on search query ----
+  // ---- Filtering ----
   const filteredData = useMemo(() => {
     if (!searchQuery) return tableData;
     return tableData.filter((row) =>
@@ -220,16 +214,13 @@ const TableDetails = forwardRef(({
     );
   }, [tableData, searchQuery]);
 
-  // Sorting handler.
+  // ---- Sorting ----
   const handleSort = (key: string) => {
     if (sortConfig.key === key) {
       if (sortConfig.direction === 'desc') {
-        setSortConfig({
-          key: null,
-          direction: 'asc',
-        });
+        setSortConfig({ key: null, direction: 'asc' });
       } else {
-        setSortConfig({ key, direction: 'desc'});
+        setSortConfig({ key, direction: 'desc' });
       }
     } else {
       setSortConfig({ key, direction: 'asc' });
@@ -247,15 +238,28 @@ const TableDetails = forwardRef(({
     });
   }, [filteredData, sortConfig]);
 
+  /* ---------- Pagination ---------- */
+  const pageCount = useMemo(() => Math.ceil(sortedData.length / ROWS_PER_PAGE), [sortedData]);
+
+  useEffect(() => {
+    if (currentPage > pageCount) {
+      setCurrentPage(pageCount || 1);
+    }
+  }, [pageCount]);
+
+  const paginatedData = useMemo(() => {
+    if (sortedData.length <= 10000) return sortedData;
+    const start = (currentPage - 1) * ROWS_PER_PAGE;
+    return sortedData.slice(start, start + ROWS_PER_PAGE);
+  }, [sortedData, currentPage]);
+
+  // Selection helpers work on currently visible rows
   const toggleRowSelection = (row: any) => {
     const key = getRowKey(row, primaryKeyField);
     if (key === undefined) return;
     setSelectedRowKeys(prev => {
       const newSet = new Set(prev);
-      if (newSet.has(key))
-        newSet.delete(key);
-      else
-        newSet.add(key);
+      if (newSet.has(key)) newSet.delete(key); else newSet.add(key);
       return newSet;
     });
   };
@@ -264,9 +268,7 @@ const TableDetails = forwardRef(({
     if (!primaryKeyField) return;
     if (e.target.checked) {
       const allKeysSet = new Set(
-        sortedData
-          .map(row => getRowKey(row, primaryKeyField))
-          .filter(key => key !== undefined)
+        paginatedData.map(row => getRowKey(row, primaryKeyField)).filter(key => key !== undefined)
       );
       setSelectedRowKeys(allKeysSet);
     } else {
@@ -274,17 +276,13 @@ const TableDetails = forwardRef(({
     }
   };
 
-  const allSelected =
-    primaryKeyField &&
-    sortedData.length > 0 &&
-    sortedData.every(row =>
-      selectedRowKeys.has(getRowKey(row, primaryKeyField))
-    );
+  const allSelected = useMemo(() => selectedRowKeys.size > 0 && primaryKeyField &&
+      paginatedData.length > 0 && paginatedData.every(row => selectedRowKeys.has(getRowKey(row, primaryKeyField))),
+    [paginatedData, selectedRowKeys, primaryKeyField]);
 
-  const heading = tableMode === 'browse'
-    ? `Browsing ${table.name}`
-    : `Structure of ${table.name}`;
+  const heading = tableMode === 'browse' ? `Browsing ${table.name}` : `Structure of ${table.name}`;
 
+  /* ------------------- Render ------------------- */
   return (
     <div ref={ref} className="mt-4">
       <div className="flex justify-between items-center">
@@ -292,34 +290,15 @@ const TableDetails = forwardRef(({
         {tableMode === 'browse' && (
           <div className="flex gap-2 items-center">
             {selectedRowKeys.size > 0 && (
-              <button
-                onClick={handleBulkDelete}
-                className="inline-flex items-center bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded"
-              >
-                Bulk Delete
-              </button>
+              <button onClick={handleBulkDelete} className="inline-flex items-center bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded">Bulk Delete</button>
             )}
             {searchActive && (
-              <input
-                ref={searchElRef}
-                type="text"
-                placeholder="Search..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="px-2 py-1 rounded outline-[1px] outline-gray-300 text-black max-h-full"
-              />
+              <input ref={searchElRef} type="text" placeholder="Search..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="px-2 py-1 rounded outline-[1px] outline-gray-300 text-black max-h-full" />
             )}
-            <button
-              onClick={() => setSearchActive(prev => !prev)}
-              className="inline-flex items-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded"
-              title="Toggle Search"
-            >
+            <button onClick={() => setSearchActive(prev => !prev)} className="inline-flex items-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded" title="Toggle Search">
               <MagnifyingGlassIcon className="h-5 w-5" />
             </button>
-            <button
-              className="inline-flex items-center bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-2 rounded"
-              onClick={handleAddItem}
-            >
+            <button className="inline-flex items-center bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-2 rounded" onClick={handleAddItem}>
               <PlusIcon className="h-5 w-5 mr-1" />
               Add
             </button>
@@ -328,188 +307,127 @@ const TableDetails = forwardRef(({
       </div>
 
       {tableMode === 'browse' ? (
-        sortedData.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="min-w-full bg-gray-700 mt-2">
-              <thead>
-              <tr>
-                {allKeys.map((key, index) => (
-                  <th
-                    key={key}
-                    className="px-4 py-2 cursor-pointer select-none"
-                    onClick={() => handleSort(key)}
-                  >
-                    <div className="flex gap-1">
-                      {index === 0 && (
-                        <input
-                          onClick={e => e.stopPropagation()}
-                          type="checkbox"
-                          checked={!!allSelected}
-                          onChange={handleSelectAll}
-                          className="mr-2"
-                        />
-                      )}
-                      <div className={'flex'}>
-                        {(primaryKeys.includes(key) || key === '__outbound_key') && <KeyIcon className={'me-2 text-yellow-300'} width={15} />}
-                        {key === '__outbound_key' ? 'key' : key}
-                        {sortConfig.key === key && (
-                          <span className="ml-2">
-                              {sortConfig.direction === 'asc' ? '▲' : '▼'}
-                            </span>
+        paginatedData.length > 0 ? (
+          <>
+            <div className="overflow-x-auto">
+              <table className="min-w-full bg-gray-700 mt-2">
+                <thead>
+                <tr>
+                  {allKeys.map((key, index) => (
+                    <th key={key} className="px-4 py-2 cursor-pointer select-none" onClick={() => handleSort(key)}>
+                      <div className="flex gap-1">
+                        {index === 0 && (
+                          <input onClick={e => e.stopPropagation()} type="checkbox" checked={!!allSelected} onChange={handleSelectAll} className="mr-2" />
                         )}
-                      </div>
-                    </div>
-                  </th>
-                ))}
-                <th className="px-4 py-2">Actions</th>
-              </tr>
-              </thead>
-              <tbody>
-              {sortedData.map((row, idx) => {
-                const rowKey = getRowKey(row, primaryKeyField);
-                const isChanged = changedRows.has(rowKey);
-                return (
-                  <motion.tr
-                    key={rowKey}
-                    className="border-t border-gray-600"
-                    initial={{ backgroundColor: "rgba(255,76,88,0)" }}
-                    animate={{ backgroundColor: isChanged ? "rgba(255,76,88,0.37)" : "rgba(255,76,88, 0)" }}
-                    transition={{ duration: BLINK_DURATION / 1000 }}
-                  >
-                    {allKeys.map((key, index) => {
-                      const cellValue = row[key];
-                      return (
-                        <td
-                          key={key + cellValue}
-                          className="px-4 py-2 hover:bg-gray-600 cursor-text"
-                          onClick={() => {
-                            // if (primaryKeys?.includes(key)) return;
-                            setEditingCell({ rowKey, columnKey: key });
-                            setInlineEditingValue(
-                              cellValue !== undefined
-                                ? typeof cellValue === 'object'
-                                  ? JSON.stringify(cellValue)
-                                  : cellValue
-                                : ''
-                            );
-                          }}
-                        >
-                          {index === 0 && (
-                            <input
-                              onClick={e => e.stopPropagation()}
-                              type="checkbox"
-                              checked={selectedRowKeys.has(rowKey)}
-                              onChange={() => toggleRowSelection(row)}
-                              className="mr-2"
-                            />
+                        <div className={'flex'}>
+                          {(primaryKeys.includes(key) || key === '__outbound_key') && <KeyIcon className={'me-2 text-yellow-300'} width={15} />}
+                          {key === '__outbound_key' ? 'key' : key}
+                          {sortConfig.key === key && (
+                            <span className="ml-2">{sortConfig.direction === 'asc' ? '▲' : '▼'}</span>
                           )}
-                          {editingCell &&
-                          editingCell.rowKey === rowKey &&
-                          editingCell.columnKey === key ? (
-                            <input
-                              type="text"
-                              value={inlineEditingValue}
-                              onChange={e => setInlineEditingValue(e.target.value)}
-                              onBlur={async () => {
-                                let newValue: string | number | boolean = inlineEditingValue;
-                                if (typeof cellValue === "number") {
-                                  newValue = Number(inlineEditingValue);
-                                } else if (typeof cellValue === "boolean") {
-                                  newValue = inlineEditingValue.toLowerCase() === "true";
-                                } else if (typeof cellValue === "object" && cellValue !== null) {
+                        </div>
+                      </div>
+                    </th>
+                  ))}
+                  <th className="px-4 py-2">Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                {paginatedData.map((row, idx) => {
+                  const rowKey = getRowKey(row, primaryKeyField);
+                  const isChanged = changedRows.has(rowKey);
+                  return (
+                    <motion.tr
+                      key={rowKey}
+                      className="border-t border-gray-600"
+                      initial={{ backgroundColor: "rgba(255,76,88,0)" }}
+                      animate={{ backgroundColor: isChanged ? "rgba(255,76,88,0.37)" : "rgba(255,76,88, 0)" }}
+                      transition={{ duration: BLINK_DURATION / 1000 }}
+                    >
+                      {allKeys.map((key, index) => {
+                        const cellValue = row[key];
+                        return (
+                          <td key={key + cellValue} className="px-4 py-2 hover:bg-gray-600 cursor-text" onClick={() => {
+                            setEditingCell({ rowKey, columnKey: key });
+                            setInlineEditingValue(cellValue !== undefined ? (typeof cellValue === 'object' ? JSON.stringify(cellValue) : cellValue) : '');
+                          }}>
+                            {index === 0 && (
+                              <input onClick={e => e.stopPropagation()} type="checkbox" checked={selectedRowKeys.has(rowKey)} onChange={() => toggleRowSelection(row)} className="mr-2" />
+                            )}
+                            {editingCell && editingCell.rowKey === rowKey && editingCell.columnKey === key ? (
+                              <input
+                                type="text"
+                                value={inlineEditingValue}
+                                onChange={e => setInlineEditingValue(e.target.value)}
+                                onBlur={async () => {
+                                  let newValue: string | number | boolean = inlineEditingValue;
+                                  if (typeof cellValue === "number") newValue = Number(inlineEditingValue);
+                                  else if (typeof cellValue === "boolean") newValue = inlineEditingValue.toLowerCase() === "true";
+                                  else if (typeof cellValue === "object" && cellValue !== null) {
+                                    try { newValue = JSON.parse(inlineEditingValue); } catch { newValue = inlineEditingValue; }
+                                  }
                                   try {
-                                    newValue = JSON.parse(inlineEditingValue);
-                                  } catch {
-                                    newValue = inlineEditingValue;
-                                  }
-                                }
-                                try {
-                                  if (newValue !== row[key]) {
-                                    if (!isOutboundKeyTable) {
-                                      await table.update(getRowKeyQueriable(rowKey), { [key]: newValue });
-                                    } else {
-                                      await table.put({ ...omit(row, '__outbound_key'), [key]: newValue }, row.__outbound_key);
+                                    if (newValue !== row[key]) {
+                                      if (!isOutboundKeyTable) await table.update(getRowKeyQueriable(rowKey), { [key]: newValue });
+                                      else await table.put({ ...omit(row, '__outbound_key'), [key]: newValue }, row.__outbound_key);
+                                      await refreshTableData();
                                     }
-                                    await refreshTableData();
+                                  } catch (e) {
+                                    console.error(e);
+                                    if (e.message) alert(e.message);
                                   }
-                                } catch (e) {
-                                  console.error(e)
-                                  if (e.message) {
-                                    alert(e.message)
-                                  }
-                                }
-                                setEditingCell(null);
-                                setInlineEditingValue("");
-                              }}
-                              onKeyDown={async (e) => {
-                                if (e.key === "Enter") {
-                                  e.currentTarget.blur();
-                                } else if (e.key === "Escape") {
                                   setEditingCell(null);
                                   setInlineEditingValue("");
-                                }
-                              }}
-                              autoFocus
-                              className="w-[100px] bg-gray-700 p-1"
-                            />
-                          ) : (
-                            cellValue !== undefined ? JSON.stringify(cellValue) : ''
-                          )}
-                        </td>
-                      );
-                    })}
-                    <td className="px-4 py-2 space-x-2">
-                      <button
-                        title={'Edit'}
-                        onClick={() => handleEditItem(row)}
-                        className="inline-flex items-center bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-1 px-2 rounded"
-                      >
-                        <PencilIcon className="h-5 w-5" />
-                      </button>
-                      <button
-                        title={'Delete'}
-                        onClick={() => handleDeleteItem(row, idx)}
-                        className="inline-flex items-center bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded"
-                      >
-                        <TrashIcon className="h-5 w-5" />
-                      </button>
-                      {changeHistory.has(rowKey) && <button
-                        title={'History'}
-                        onClick={() => {
-                          setSelectedChangeHistory([rowKey, changeHistory.get(rowKey)]);
-                          setIsChangeHistoryModalOpen(true);
-                        }}
-                        className="inline-flex items-center bg-purple-500 hover:bg-purple-700 text-white font-bold py-1 px-2 rounded"
-                      >
-                        <ClockIcon className="h-5 w-5"/>
-                      </button>}
-                    </td>
-                  </motion.tr>
-                );
-              })}
-              </tbody>
-            </table>
-          </div>
+                                }}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter") e.currentTarget.blur();
+                                  else if (e.key === "Escape") { setEditingCell(null); setInlineEditingValue(""); }
+                                }}
+                                autoFocus
+                                className="w-[100px] bg-gray-700 p-1"
+                              />
+                            ) : (
+                              cellValue !== undefined ? JSON.stringify(cellValue) : ''
+                            )}
+                          </td>
+                        );
+                      })}
+                      <td className="px-4 py-2 space-x-2">
+                        <button title={'Edit'} onClick={() => handleEditItem(row)} className="inline-flex items-center bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-1 px-2 rounded"><PencilIcon className="h-5 w-5" /></button>
+                        <button title={'Delete'} onClick={() => handleDeleteItem(row)} className="inline-flex items-center bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded"><TrashIcon className="h-5 w-5" /></button>
+                        {changeHistory.has(rowKey) && <button title={'History'} onClick={() => { setSelectedChangeHistory([rowKey, changeHistory.get(rowKey)]); setIsChangeHistoryModalOpen(true); }} className="inline-flex items-center bg-purple-500 hover:bg-purple-700 text-white font-bold py-1 px-2 rounded"><ClockIcon className="h-5 w-5"/></button>}
+                      </td>
+                    </motion.tr>
+                  );
+                })}
+                </tbody>
+              </table>
+            </div>
+            {/* Pagination Controls */}
+            {sortedData.length > 10000 && (
+              <div className="flex justify-center items-center gap-4 py-3">
+                <button disabled={currentPage === 1} onClick={() => setCurrentPage(p => Math.max(1, p - 1))} className="bg-gray-600 disabled:opacity-50 px-3 py-1 rounded">Prev</button>
+                <span onClick={() => {
+                  const newPage = window.prompt('Enter page number')
+                  if (newPage && !isNaN(Number(newPage))) {
+                    setCurrentPage(Math.max(1, Math.min(pageCount, Number(newPage))))
+                  }
+                }}>
+                  Page {currentPage} of {pageCount}
+                </span>
+                <button disabled={currentPage === pageCount} onClick={() => setCurrentPage(p => Math.min(pageCount, p + 1))} className="bg-gray-600 disabled:opacity-50 px-3 py-1 rounded">Next</button>
+              </div>
+            )}
+          </>
         ) : (
           <p>No data available in this table.</p>
         )
       ) : (
-        <TableSchema db={db} table={table}/>
+        <TableSchema db={db} table={table} />
       )}
 
-      <RowChangeHistoryModal isOpen={isChangeHistoryModalOpen}
-                             onRollback={handleRollback}
-                             onClose={() => {
-                               setIsChangeHistoryModalOpen(false);
-                             }} changeHistory={selectedChangeHistory} />
-      <ItemModal
-        isOutboundKeyTable={isOutboundKeyTable}
-        isOpen={isModalOpen}
-        onClose={handleModalClose}
-        table={table}
-        onSubmit={handleItemSubmit}
-        initialData={editingRowData}
-      />
+      <RowChangeHistoryModal isOpen={isChangeHistoryModalOpen} onRollback={handleRollback} onClose={() => setIsChangeHistoryModalOpen(false)} changeHistory={selectedChangeHistory} />
+      <ItemModal isOutboundKeyTable={isOutboundKeyTable} isOpen={isModalOpen} onClose={handleModalClose} table={table} onSubmit={handleItemSubmit} initialData={editingRowData} />
     </div>
   );
 });

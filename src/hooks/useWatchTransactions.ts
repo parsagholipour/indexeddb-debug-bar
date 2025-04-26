@@ -18,6 +18,7 @@ const useWatchTransactions = (db: Dexie): {operations: Operation[]; clearOperati
         type: op.type ?? 'unknown',
         timestamp: new Date(),
         ...op,
+        results: op.results?.length > 10000 ? ['BULK_UNSUPPORTED'] : op.results,
       } as Operation,
     ]);
   }
