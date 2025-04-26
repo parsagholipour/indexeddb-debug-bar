@@ -1,4 +1,4 @@
-[![indexeddb-debug-bar-banner](https://raw.githubusercontent.com/parsagholipour/indexeddb-debug-bar/master/public/banner.jpg)](https://parsagholipour.github.io/indexeddb-debug-bar-demo/)
+ [![indexeddb-debug-bar-banner](https://raw.githubusercontent.com/parsagholipour/indexeddb-debug-bar/master/public/banner.jpg)](https://parsagholipour.github.io/indexeddb-debug-bar-demo/)
 
 # IndexedDB Debug Bar - <a href="https://parsagholipour.github.io/indexeddb-debug-bar-demo/" target="_blank">🌐 Live Demo</a>
 **A tool to make IndexedDB development easier**
@@ -46,7 +46,7 @@ import IndexedDBDebugBar from 'indexeddb-debug-bar/react';
 
 <IndexedDBDebugBar db={'your-db-name'} options={{ ...optional }} />
 ```
-#### Vue
+#### Vue - <a href="https://stackblitz.com/edit/vitejs-vite-jihqnvv6?file=src%2FApp.vue" target="_blank">LIVE DEMO</a>
 ```vue
 <script setup>
 import IndexedDBDebugBar from 'indexeddb-debug-bar/vue';
