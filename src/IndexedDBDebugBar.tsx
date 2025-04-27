@@ -7,7 +7,7 @@ import PositionDropdown from "./components/PositionDropdown.tsx";
 import IndexedDBDebugBarProps from "./common/IndexedDBDebugBarProps.ts";
 import IndexedDBDebug from "./IndexedDBDebug.tsx";
 import Dexie from "dexie";
-import {generateDexieSchemaFromIDB} from "./utils/helpers.ts";
+import {generateDexieSchemaFromIDB, getIDBVersion} from "./utils/helpers.ts";
 import SelectDB from "./components/SelectDB.tsx";
 import {CircleStackIcon} from "@heroicons/react/24/outline";
 import './style.css'
@@ -153,9 +153,11 @@ const IndexedDBDebugBar = ({ db: _db, initialLayout, onLayoutChange }: IndexedDB
     if (typeof db === 'string') {
       setTimeout(() => {
         generateDexieSchemaFromIDB(db).then((result) => {
-          const _dexieDB = new Dexie(db)
-          _dexieDB.version(1).stores(result);
-          setDexieDB(_dexieDB)
+          getIDBVersion(db).then((version) => {
+            const _dexieDB = new Dexie(db)
+            _dexieDB.version(version / 10).stores(result);
+            setDexieDB(_dexieDB)
+          })
         })
       })
     }

@@ -119,3 +119,32 @@ export default function generateGuid() {
   }
   return result;
 }
+
+/**
+ * Return the current on-disk version of an IndexedDB database.
+ * Falls back to 1 when the DB is missing or the browser does not support
+ * `indexedDB.databases()`.
+ */
+export const getIDBVersion = async (name: string): Promise<number> => {
+  // Modern browsers (Chrome v86+, Firefox v118+, Edge v86+)
+  if (indexedDB.databases) {
+    const list = await indexedDB.databases();            // → [{name, version}, …]
+    return list.find(d => d.name === name)?.version ?? 1;
+  }
+
+  // Fallback: open the DB without specifying a version number
+  return new Promise<number>(resolve => {
+    const req = indexedDB.open(name);
+    req.onsuccess = () => {
+      const v = req.result.version || 1;
+      req.result.close();
+      resolve(v);
+    };
+    // DB doesn’t exist yet → onsuccess will never fire, onupgradeneeded does.
+    req.onupgradeneeded = () => {
+      req.transaction?.abort();     // Leave the on-disk DB untouched.
+      resolve(1);
+    };
+    req.onerror = () => resolve(1);
+  });
+};
