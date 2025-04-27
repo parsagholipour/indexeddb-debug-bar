@@ -21,7 +21,6 @@ export default defineConfig(({mode}) => ({
         'react-modal'
         , 'dexie', 'dexie-cloud-addon', 'dexie-export-import', 'dexie-react-hooks'],
     },
-    sourcemap: true,
     minify: true,
   }
 }))
