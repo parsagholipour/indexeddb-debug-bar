@@ -10,6 +10,8 @@ import RowChangeHistoryModal from "./RowChangeHistoryModal.tsx";
 import {KeyIcon} from "@heroicons/react/24/solid";
 import {getRowKey, getRowKeyQueriable, getRowKeyQueriableForDelete} from "../utils/helpers.ts";
 import omit from "lodash.omit";
+import EditIcon from "./icons/EditIcon.tsx";
+import TruncatableText from "./shared/TruncatableText.tsx";
 
 interface TableDetailsProps {
   table: Table;
@@ -315,7 +317,7 @@ const TableDetails = forwardRef(({
                 <tr>
                   {allKeys.map((key, index) => (
                     <th key={key} className="px-4 py-2 cursor-pointer select-none" onClick={() => handleSort(key)}>
-                      <div className="flex gap-1">
+                      <div className="flex flex-nowrap gap-1">
                         {index === 0 && (
                           <input onClick={e => e.stopPropagation()} type="checkbox" checked={!!allSelected} onChange={handleSelectAll} className="mr-2" />
                         )}
@@ -347,55 +349,67 @@ const TableDetails = forwardRef(({
                       {allKeys.map((key, index) => {
                         const cellValue = row[key];
                         return (
-                          <td key={key + cellValue} className="px-4 py-2 hover:bg-gray-600 cursor-text" onClick={() => {
+                          <td key={key + cellValue} className="px-4 py-2 hover:bg-gray-600 duration-100 transition-all cursor-text" onClick={() => {
                             setEditingCell({ rowKey, columnKey: key });
                             setInlineEditingValue(cellValue !== undefined ? (typeof cellValue === 'object' ? JSON.stringify(cellValue) : cellValue) : '');
                           }}>
-                            {index === 0 && (
-                              <input onClick={e => e.stopPropagation()} type="checkbox" checked={selectedRowKeys.has(rowKey)} onChange={() => toggleRowSelection(row)} className="mr-2" />
-                            )}
-                            {editingCell && editingCell.rowKey === rowKey && editingCell.columnKey === key ? (
-                              <input
-                                type="text"
-                                value={inlineEditingValue}
-                                onChange={e => setInlineEditingValue(e.target.value)}
-                                onBlur={async () => {
-                                  let newValue: string | number | boolean = inlineEditingValue;
-                                  if (typeof cellValue === "number") newValue = Number(inlineEditingValue);
-                                  else if (typeof cellValue === "boolean") newValue = inlineEditingValue.toLowerCase() === "true";
-                                  else if (typeof cellValue === "object" && cellValue !== null) {
-                                    try { newValue = JSON.parse(inlineEditingValue); } catch { newValue = inlineEditingValue; }
-                                  }
-                                  try {
-                                    if (newValue !== row[key]) {
-                                      if (!isOutboundKeyTable) await table.update(getRowKeyQueriable(rowKey), { [key]: newValue });
-                                      else await table.put({ ...omit(row, '__outbound_key'), [key]: newValue }, row.__outbound_key);
-                                      await refreshTableData();
+                            <div className="flex">
+                              {index === 0 && (
+                                <input onClick={e => e.stopPropagation()} type="checkbox" checked={selectedRowKeys.has(rowKey)} onChange={() => toggleRowSelection(row)} className="mr-2" />
+                              )}
+                              {editingCell && editingCell.rowKey === rowKey && editingCell.columnKey === key ? (
+                                <input
+                                  type="text"
+                                  value={inlineEditingValue}
+                                  onChange={e => setInlineEditingValue(e.target.value)}
+                                  onBlur={async () => {
+                                    let newValue: string | number | boolean = inlineEditingValue;
+                                    if (typeof cellValue === "number") newValue = Number(inlineEditingValue);
+                                    else if (typeof cellValue === "boolean") newValue = inlineEditingValue.toLowerCase() === "true";
+                                    else if (typeof cellValue === "object" && cellValue !== null) {
+                                      try { newValue = JSON.parse(inlineEditingValue); } catch { newValue = inlineEditingValue; }
                                     }
-                                  } catch (e) {
-                                    console.error(e);
-                                    if (e.message) alert(e.message);
-                                  }
-                                  setEditingCell(null);
-                                  setInlineEditingValue("");
-                                }}
-                                onKeyDown={(e) => {
-                                  if (e.key === "Enter") e.currentTarget.blur();
-                                  else if (e.key === "Escape") { setEditingCell(null); setInlineEditingValue(""); }
-                                }}
-                                autoFocus
-                                className="w-[100px] bg-gray-700 p-1"
-                              />
-                            ) : (
-                              cellValue !== undefined ? JSON.stringify(cellValue) : ''
-                            )}
+                                    try {
+                                      if (newValue !== row[key]) {
+                                        if (!isOutboundKeyTable) await table.update(getRowKeyQueriable(rowKey), { [key]: newValue });
+                                        else await table.put({ ...omit(row, '__outbound_key'), [key]: newValue }, row.__outbound_key);
+                                        await refreshTableData();
+                                      }
+                                    } catch (e) {
+                                      console.error(e);
+                                      if (e.message) alert(e.message);
+                                    }
+                                    setEditingCell(null);
+                                    setInlineEditingValue("");
+                                  }}
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Enter") e.currentTarget.blur();
+                                    else if (e.key === "Escape") { setEditingCell(null); setInlineEditingValue(""); }
+                                  }}
+                                  autoFocus
+                                  className="w-[100px] bg-gray-700 p-1"
+                                />
+                              ) : (
+                                cellValue !== undefined ? <TruncatableText text={JSON.stringify(cellValue)}/> : ''
+                              )}
+                            </div>
                           </td>
                         );
                       })}
-                      <td className="px-4 py-2 space-x-2">
-                        <button title={'Edit'} onClick={() => handleEditItem(row)} className="inline-flex items-center bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-1 px-2 rounded"><PencilIcon className="h-5 w-5" /></button>
-                        <button title={'Delete'} onClick={() => handleDeleteItem(row)} className="inline-flex items-center bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded"><TrashIcon className="h-5 w-5" /></button>
-                        {changeHistory.has(rowKey) && <button title={'History'} onClick={() => { setSelectedChangeHistory([rowKey, changeHistory.get(rowKey)]); setIsChangeHistoryModalOpen(true); }} className="inline-flex items-center bg-purple-500 hover:bg-purple-700 text-white font-bold py-1 px-2 rounded"><ClockIcon className="h-5 w-5"/></button>}
+                      <td className="px-4 py-2 flex flex-nowrap gap-2">
+                        <button title={'Edit'} onClick={() => handleEditItem(row)}
+                                className="inline-flex items-center bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-1 px-2 rounded">
+                          <EditIcon />
+                        </button>
+                        <button title={'Delete'} onClick={() => handleDeleteItem(row)}
+                                className="inline-flex items-center bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded">
+                          <TrashIcon className="h-5 w-5"/></button>
+                        {changeHistory.has(rowKey) && <button title={'History'} onClick={() => {
+                          setSelectedChangeHistory([rowKey, changeHistory.get(rowKey)]);
+                          setIsChangeHistoryModalOpen(true);
+                        }}
+                                                              className="inline-flex items-center bg-purple-500 hover:bg-purple-700 text-white font-bold py-1 px-2 rounded">
+                          <ClockIcon className="h-5 w-5"/></button>}
                       </td>
                     </motion.tr>
                   );

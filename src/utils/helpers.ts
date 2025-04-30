@@ -148,3 +148,17 @@ export const getIDBVersion = async (name: string): Promise<number> => {
     req.onerror = () => resolve(1);
   });
 };
+
+export function isInSelector(el: Element | null, selector: string): boolean {
+  if (!el) return false;
+
+  let current: Element | null = el;
+  while (current) {
+    if (current.matches(selector)) {
+      return true;
+    }
+    current = current.parentElement;
+  }
+  return false;
+}
+

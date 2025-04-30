@@ -63,7 +63,7 @@ const IndexedDBDebug = ({ db, _barProps }: IndexedDBDebugProps) => {
               <TabHeader
                 totalUnreadOperations={totalUnreadOperations}
                 isCloud={isCloud}
-                className={orientation === 'vertical' ? 'sticky top-0 bg-gray-800 py-2 mb-[-0.5rem]' : ''}
+                className={orientation === 'vertical' ? 'sticky z-10 top-0 bg-gray-800 py-2 mb-[-0.5rem]' : ''}
                 activeTab={activeTab}
                 setActiveTab={setActiveTab}
               />

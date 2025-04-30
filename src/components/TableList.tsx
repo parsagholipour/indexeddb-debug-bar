@@ -12,7 +12,9 @@ import { Menu } from '@headlessui/react';
 import useCloud from "../hooks/useCloud.ts";
 import { Table } from "dexie";
 import CloudBadge from "./shared/CloudBadge.tsx";
-import Dropdown from './shared/Dropdown'; // Adjust the path as needed
+import Dropdown from './shared/Dropdown';
+import {isInSelector} from "../utils/helpers.ts";
+import clsx from "clsx"; // Adjust the path as needed
 
 interface TableListProps {
   tables: Table[];
@@ -81,10 +83,21 @@ const TableList = ({
           </thead>
           <tbody>
           {filteredTables.map((table) => (
-            <tr key={table.name} className="border-t border-gray-600">
+            <tr
+              onClick={(e) => {
+                if (!isInSelector(e.target as Element, '.dropdown')) {
+                  handleBrowse(table)
+                }
+              }}
+              key={table.name} className={clsx([
+                selectedTable?.name === table.name ? 'bg-gray-800' : 'hover:bg-[#2f3744]'  ,
+                'border cursor-pointer transition-all duration-200 border-gray-600',
+            ])}>
               <td className="px-4 py-2">
                 <div className="flex items-center gap-1">
-                  <div>{table.name}</div>
+                  <div className={clsx([
+                    selectedTable?.name === table.name && 'font-bold'
+                  ])}>{table.name}</div>
                   {isTableCloud(table) && <CloudBadge />}
                 </div>
               </td>
@@ -92,24 +105,26 @@ const TableList = ({
                 <button
                   disabled={selectedTable?.name === table.name && tableMode === 'browse'}
                   aria-label={'Browse'}
-                  className="inline-flex items-center bg-blue-500 hover:bg-blue-700 disabled:bg-blue-700 text-white font-bold py-1 px-2 rounded"
+                  className="inline-flex transition-all duration-100 items-center bg-blue-500 hover:bg-blue-700 disabled:bg-blue-700 text-white font-bold py-1 px-2 rounded"
                   onClick={() => handleBrowse(table)}
                 >
-                  <EyeIcon className="h-5 w-5 mr-1" />
-                  Browse
+                  <EyeIcon className="h-5 w-5" />
                 </button>
                 <button
                   disabled={selectedTable?.name === table.name && tableMode === 'structure'}
                   aria-label={'Structure'}
                   title={'Structure'}
-                  className="inline-flex items-center bg-green-500 hover:bg-green-700 disabled:bg-green-700 text-white font-bold py-1 px-2 rounded"
-                  onClick={() => handleStructure(table)}
+                  className="inline-flex transition-all duration-100 items-center bg-green-500 hover:bg-green-700 disabled:bg-green-700 text-white font-bold py-1 px-2 rounded"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleStructure(table)
+                  }}
                 >
                   <CircleStackIcon className="h-5 w-5" />
                 </button>
                 <Dropdown
                   trigger={
-                    <div className="inline-flex justify-center w-full rounded-md bg-gray-600 px-2 py-1 text-sm text-white hover:bg-gray-500 focus:outline-none">
+                    <div className="dropdown inline-flex transition-all duration-100 justify-center w-full rounded-md bg-gray-600 px-2 py-1 text-sm text-white hover:bg-gray-500 focus:outline-none">
                       <EllipsisVerticalIcon className="h-5 w-5" aria-hidden="true" />
                     </div>
                   }
