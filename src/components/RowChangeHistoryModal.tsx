@@ -70,7 +70,7 @@ const RowChangeHistoryModal: React.FC<RowChangeHistoryModalProps> = ({
       onRequestClose={onClose}
       contentLabel="Change History Modal"
       className="bg-white p-6 max-w-3xl mx-auto rounded-lg shadow-xl outline-none"
-      overlayClassName="fixed z-[100] inset-0 bg-black bg-opacity-50 flex items-center justify-center"
+      overlayClassName="fixed z-[10001] inset-0 bg-black bg-opacity-50 flex items-center justify-center"
     >
       {/* Modal header */}
       <div className="flex justify-between items-center mb-6">

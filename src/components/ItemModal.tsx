@@ -116,7 +116,7 @@ const ItemModal = ({
       onRequestClose={onClose}
       contentLabel="Item Modal"
       className="bg-white p-4 max-w-xl mx-auto rounded shadow-lg outline-none"
-      overlayClassName="fixed z-[100] inset-0 bg-black bg-opacity-50 flex items-center justify-center"
+      overlayClassName="fixed z-[10001] inset-0 bg-black bg-opacity-50 flex items-center justify-center"
     >
       <h2 className="text-xl font-bold mb-4">{modalTitle}</h2>
       {isOutboundKeyTable &&

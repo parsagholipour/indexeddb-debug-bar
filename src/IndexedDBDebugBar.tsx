@@ -115,7 +115,7 @@ const IndexedDBDebugBar = ({ db: _db, initialLayout, onLayoutChange }: IndexedDB
 
   // Remove size-related Tailwind classes so inline styles take precedence
   const getPositionClasses = () => {
-    const base = clsx('fixed z-50 bg-gray-800 text-white shadow-lg flex');
+    const base = clsx('fixed z-[10000] bg-gray-800 text-white shadow-lg flex');
     const sizeClass = layout.isFullScreen
       ? 'inset-0'
       : layout.isCollapsed
