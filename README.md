@@ -64,6 +64,17 @@ import IndexedDBDebugBar from 'indexeddb-debug-bar/vue';
 </script>
 ```
 
+#### Browser Dev Tool
+<img width="1261" height="205" alt="image" src="https://github.com/user-attachments/assets/bf870c3e-2ca3-463a-b782-a017c6a556d8" />
+
+To load the IndexedDB Debug Bar on any website(not using <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CSP" targe="_blank">CSP</a>), run the following command in your browser’s developer console:
+```js
+import('https://cdn.jsdelivr.net/npm/indexeddb-debug-bar/dist/idb.js')
+```
+
+
+
+
 ### Dexie Cloud Demo
 
 https://github.com/user-attachments/assets/664cd39b-2693-4157-9adb-2abc0efc857f

@@ -8,12 +8,13 @@ import cssInjectedByJsPlugin from 'vite-plugin-css-injected-by-js'
 export default defineConfig({
   plugins: [react(), IgnorePublicPlugin(), cssInjectedByJsPlugin(), nodePolyfills()],
   build: {
-    outDir: 'dist/browser',
+    outDir: 'dist',
+    emptyOutDir: false,
     lib: {
-      entry: path.resolve(__dirname, 'src/build/core.ts'),
+      entry: path.resolve(__dirname, 'src/build/core-init.ts'),
       name: 'IndexedDBDebugBar',
-      fileName: (format) => `indexeddb-debug-bar-browser.${format}.js`,
-      formats: ['umd', 'es'],
+      fileName: () => `idb.js`,
+      formats: ['es'],
     },
     rollupOptions: {
     },

@@ -1,6 +1,6 @@
 {
   "name": "indexeddb-debug-bar",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "type": "module",
   "description": "A tool for IndexedDB development (CRUD, Query Builder and more)",
   "main": "./dist/core/indexeddb-debug-bar-core.cjs.js",
@@ -31,11 +31,12 @@
     "dev": "vite",
     "dev-vue": "vite --config vite.config.vue-dev.ts",
     "build-doc": "vite build",
-    "build": "npm run build-core && npm run build-react && npm run build-vue && npm run build-browser && npm run build-types",
+    "build": "npm run build-core && npm run build-react && npm run build-vue && npm run build-browser && npm run build-browser-init && npm run build-types",
     "build-react": "vite build --config vite.config.react.ts",
     "build-vue": "vite build --config vite.config.vue.ts",
     "build-core": "vite build --config vite.config.core.ts",
     "build-browser": "vite build --config vite.config.browser.ts",
+    "build-browser-init": "vite build --config vite.config.browser-init.ts",
     "build-types": "vue-tsc -p tsconfig.build.json  --emitDeclarationOnly --noCheck",
     "lint": "eslint .",
     "preview": "vite preview"
@@ -48,10 +49,10 @@
     "jsoneditor": "^10.1.1",
     "lodash.omit": "^4.5.0",
     "postcss-prefix-selector": "^2.1.0",
-    "react-rnd": "^10.5.2"
+    "react-rnd": "^10.5.2",
+    "vite-plugin-css-injected-by-js": "^3.5.2"
   },
   "devDependencies": {
-    "react-modal": "^3.16.1",
     "@eslint/js": "^9.13.0",
     "@types/jsoneditor": "^9.9.5",
     "@types/lodash.omit": "^4.5.9",
@@ -71,6 +72,7 @@
     "eslint-plugin-react-refresh": "^0.4.14",
     "globals": "^15.11.0",
     "postcss": "^8.4.49",
+    "react-modal": "^3.16.1",
     "tailwindcss": "^3.4.15",
     "typescript": "~5.6.2",
     "typescript-eslint": "^8.11.0",
